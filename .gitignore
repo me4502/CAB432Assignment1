@@ -3,5 +3,7 @@
 *.thumbsdb
 *.DS_Store
 build/
+out/
 bin/
 .gradle/
+run/
