@@ -1,5 +1,7 @@
 package com.me4502.cab432.app;
 
+import static spark.Spark.get;
+
 import com.me4502.cab432.aws.AwsConnector;
 import com.me4502.cab432.flickr.FlickrConnector;
 import com.me4502.cab432.lastfm.LastFmConnector;
@@ -9,10 +11,7 @@ import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 
-import java.io.IOException;
 import java.nio.file.Paths;
-
-import static spark.Spark.*;
 
 /**
  * The base app class for this application
@@ -64,8 +63,9 @@ public class PhotoApp {
             this.musixmatchConnector = new MusixmatchConnector(this, musixmatchApi);
             this.lastFmConnector = new LastFmConnector(this, lastFmApi, lastFmSecret);
             this.awsConnector = new AwsConnector(this);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            // If an exception occurs here, it's bad.
+            throw new RuntimeException(e);
         }
     }
 
