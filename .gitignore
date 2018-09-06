@@ -6,6 +6,3 @@ build/
 out/
 bin/
 .gradle/
-run/
-
-photo_app.conf # This should be in the repo, but only for the initial. It needs changing.

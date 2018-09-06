@@ -1,6 +1,7 @@
 package com.me4502.cab432.app;
 
 import static spark.Spark.get;
+import static spark.Spark.port;
 
 import com.me4502.cab432.aws.AwsConnector;
 import com.me4502.cab432.flickr.FlickrConnector;
@@ -70,6 +71,7 @@ public class PhotoApp {
     }
 
     private void loadWebServer() {
+        port(5078);
         // Setup routes
         get("/image/search/:term", (request, response) -> "Searching for " + request.params("term"));
     }

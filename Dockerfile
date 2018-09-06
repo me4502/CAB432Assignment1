@@ -11,4 +11,6 @@ RUN apt-get update \
 ADD CAB432Assignment1-*.jar app.jar
 ADD photo_app.conf photo_app.conf
 
+EXPOSE 5078
+
 ENTRYPOINT java -jar app.jar
