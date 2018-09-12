@@ -1,18 +1,20 @@
 package com.me4502.cab432.flickr;
 
-import com.aetrion.flickr.Flickr;
-import com.aetrion.flickr.FlickrException;
-import com.aetrion.flickr.REST;
-import com.aetrion.flickr.photos.Photo;
-import com.aetrion.flickr.photos.SearchParameters;
+import com.flickr4java.flickr.Flickr;
+import com.flickr4java.flickr.FlickrException;
+import com.flickr4java.flickr.REST;
+import com.flickr4java.flickr.photos.Photo;
+import com.flickr4java.flickr.photos.SearchParameters;
+import com.flickr4java.flickr.test.TestInterface;
+import com.google.common.collect.Maps;
 import com.me4502.cab432.app.PhotoApp;
-import org.xml.sax.SAXException;
 
-import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.xml.parsers.ParserConfigurationException;
+import java.util.Map;
 
 /**
  * The connector with the Flickr services
@@ -28,7 +30,10 @@ public class FlickrConnector {
 
         try {
             this.flickr = new Flickr(appKey, appSecret, new REST());
-        } catch (ParserConfigurationException e) {
+
+            TestInterface testInterface = this.flickr.getTestInterface();
+            testInterface.echo(Maps.newHashMap());
+        } catch (FlickrException e) {
             throw new RuntimeException(e); // Re-throw as a runtime exception
         }
     }
@@ -40,15 +45,23 @@ public class FlickrConnector {
      *
      * @param search The search term.
      * @return The list of up to 5 URLs
-     * @throws SAXException If a SAX error occurs
-     * @throws IOException If an IO error occurs
      * @throws FlickrException If the Flickr API throws an error
      */
-    @SuppressWarnings("unchecked")
-    public List<String> getUrlsForSearch(String search) throws SAXException, IOException, FlickrException {
+    public List<Map<String, String>> getUrlsForSearch(String search) throws FlickrException {
         SearchParameters parameters = new SearchParameters();
         parameters.setText(search);
-        List<Photo> photoList = (List<Photo>) flickr.getPhotosInterface().search(parameters, 5, 1);
-        return photoList.stream().map(Photo::getUrl).collect(Collectors.toList());
+        List<Photo> photoList = flickr.getPhotosInterface().search(parameters, 5, 1);
+        var urls = new ArrayList<Map<String, String>>();
+        for (Photo photo : photoList) {
+            var data = new HashMap<String, String>();
+            data.put("url", photo.getMediumUrl());
+            data.put("id", photo.getId());
+            urls.add(data);
+        }
+        return urls;
+    }
+
+    public URL getUrlForId(String id) throws FlickrException, MalformedURLException {
+        return new URL(flickr.getPhotosInterface().getPhoto(id).getMediumUrl());
     }
 }

@@ -21,12 +21,13 @@ repositories {
 dependencies {
     // Util
     compile group: 'com.google.guava', name: 'guava', version: '23.5-jre'
+    implementation 'com.google.code.gson:gson:2.8.5'
     compile "com.sparkjava:spark-core:2.7.2"
 
     // API Services
     compile group: 'com.sachinhandiekar', name: 'jMusixMatch', version: '1.1.4'
-    compile 'software.amazon.awssdk:rekognition:2.0.0-preview-11'
-    compile 'com.aetrion.flickr:flickrapi:1.1'
+    compile 'com.amazonaws:aws-java-sdk-rekognition:1.11.407'
+    compile 'com.flickr4java:flickr4java:2.19'
     compile 'de.u-mass:lastfm-java:0.1.2'
 
     // Configuration
