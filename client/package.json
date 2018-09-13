@@ -1,0 +1,14 @@
+{
+  "name": "poster_creator",
+  "version": "1.0.0",
+  "description": "Create's posters from songs",
+  "license": "MIT",
+  "author": "Madeline Miller",
+  "dependencies": {
+    "@babel/core": "^7.0.1",
+    "@babel/preset-env": "^7.0.0",
+    "browser-sync": "^2.24.7",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^8.0.0"
+  }
+}

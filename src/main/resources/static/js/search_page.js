@@ -1,10 +1,11 @@
+"use strict";
+
 function populateImages() {
-    var children = document.querySelector("#image-container");
+  var children = document.querySelector("#image-container");
 
-    while (children.hasChildNodes()) {
-        children.removeChild(children.lastChild);
-    }
+  while (children.hasChildNodes()) {
+    children.removeChild(children.lastChild);
+  }
 
-    var search = document.querySelector("#search_bar").value;
-    console.log(search);
+  var search = document.querySelector("#search_bar").value;
 }

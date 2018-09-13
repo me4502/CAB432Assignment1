@@ -180,6 +180,7 @@ public class PhotoApp {
                 .map(String::toLowerCase)
                 .filter(lowerLabel -> tagMapping.containsKey(lowerLabel))
                 .map(lowerLabel -> tagMapping.get(lowerLabel))
+                .distinct()
                 .collect(Collectors.toList());
     }
 
