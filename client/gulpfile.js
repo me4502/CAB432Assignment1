@@ -6,7 +6,7 @@ const babel       = require('gulp-babel');
 gulp.task('babel', function() {
     return gulp.src(['src/babel/*.js'])
         .pipe(babel({
-            presets: ['env']
+            presets: ['@babel/env']
         }))
         .pipe(gulp.dest("../src/main/resources/static/js"))
         .pipe(browserSync.stream());
