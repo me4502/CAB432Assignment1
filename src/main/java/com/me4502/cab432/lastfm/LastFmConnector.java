@@ -4,18 +4,22 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.me4502.cab432.app.PhotoApp;
+import de.umass.lastfm.Caller;
 import de.umass.lastfm.Tag;
 import de.umass.lastfm.Track;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
  * The connector for the Last.FM service.
  */
 public class LastFmConnector {
+
+    private final static boolean PRELOAD_CACHE = false;
 
     private final PhotoApp app;
 
@@ -31,10 +35,14 @@ public class LastFmConnector {
         this.appKey = appKey;
         this.appSecret = appSecret;
 
-        Thread cacherThread = new Thread(this::populateCaches);
-        cacherThread.setDaemon(true);
-        cacherThread.setName("Last.FM Cache Populator Thread");
-        cacherThread.start();
+        Caller.getInstance().getLogger().setLevel(Level.WARNING);
+
+        if (PRELOAD_CACHE) {
+            Thread cacherThread = new Thread(this::populateCaches);
+            cacherThread.setDaemon(true);
+            cacherThread.setName("Last.FM Cache Populator Thread");
+            cacherThread.start();
+        }
     }
 
     /**
@@ -70,7 +78,6 @@ public class LastFmConnector {
                     return track;
                 })
                 .filter(track -> !track.getTags().isEmpty())
-                .limit(9999)
                 .collect(Collectors.toList());
     }
 

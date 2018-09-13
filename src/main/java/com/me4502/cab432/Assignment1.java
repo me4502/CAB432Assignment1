@@ -8,7 +8,7 @@ public class Assignment1 {
 
     public static void main(String[] args) {
         try {
-            new PhotoApp().load();
+            PhotoApp.getInstance().load();
         } catch (IOException e) {
             // If an exception makes it here, runtime.
             throw new RuntimeException(e);

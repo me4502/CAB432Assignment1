@@ -16,6 +16,7 @@ import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
+import spark.Response;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
  */
 public class PhotoApp {
 
-    private static PhotoApp instance;
+    private static final PhotoApp instance = new PhotoApp();
 
     // Connectors
     private FlickrConnector flickrConnector;
@@ -46,8 +47,7 @@ public class PhotoApp {
 
     private Map<String, String> tagMapping = new HashMap<>();
 
-    public PhotoApp() {
-        PhotoApp.instance = this;
+    private PhotoApp() {
     }
 
     /**
@@ -93,6 +93,11 @@ public class PhotoApp {
         }
     }
 
+    private void badRequest(Response response, String message) {
+        response.status(400);
+        response.header("Bad Request", message);
+    }
+
     private void loadWebServer() {
         port(5078);
         staticFiles.location("/static");
@@ -112,10 +117,31 @@ public class PhotoApp {
                     .collect(Collectors.toList());
             return gson.toJson(getGenreTagsForLabels(labels));
         });
+        get("/image/overlay/:image/:trackId", (request, response) -> {
+            var url = getFlickrConnector().getUrlForId(request.params("image"));
+            String lyrics = null;
+            try {
+                var lyricMap = getMusixmatchConnector().getLyricsFromTrack(
+                        getMusixmatchConnector().getTrackById(Integer.parseInt(request.params("trackId")))
+                );
+                if (lyricMap.get("id").equals("-1")) {
+                    badRequest(response, "Failed to find lyrics");
+                    return "";
+                }
+                lyrics = lyricMap.get("lyrics");
+            } catch (Exception e) {
+                badRequest(response, "Invalid Track ID");
+                return "";
+            }
+            return gson.toJson("Beep Boop: TODO Make the photo");
+        });
         get("/track/tag/:tag", (request, response)
                 -> gson.toJson(getLastFmConnector().getTracksFromTag(request.params("tag"))));
         get("/track/get/:tags", (request, response)
                 -> gson.toJson(getLastFmConnector().getSingleSongByTags(Arrays.asList(request.params("tags").split(",")))));
+        get("/track/lyrics/:name/:artist", (request, response)
+                -> gson.toJson(getMusixmatchConnector().getLyricsFromTrack(
+                        getMusixmatchConnector().getTrackForSong(request.params("name"), request.params("artist")))));
         get("/tag/label/:labels", (request, response)
                 -> gson.toJson(getGenreTagsForLabels(Arrays.asList(request.params("labels").split(",")))));
         get("/tag/popular", (request, response)
@@ -149,7 +175,7 @@ public class PhotoApp {
      * @param labels The labels from Rekognition
      * @return The genre tags for Last.FM
      */
-    public List<String> getGenreTagsForLabels(List<String> labels) {
+    private List<String> getGenreTagsForLabels(List<String> labels) {
         return labels.stream()
                 .map(String::toLowerCase)
                 .filter(lowerLabel -> tagMapping.containsKey(lowerLabel))

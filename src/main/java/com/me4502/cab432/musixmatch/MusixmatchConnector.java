@@ -3,10 +3,9 @@ package com.me4502.cab432.musixmatch;
 import com.me4502.cab432.app.PhotoApp;
 import org.jmusixmatch.MusixMatch;
 import org.jmusixmatch.MusixMatchException;
-import org.jmusixmatch.entity.lyrics.Lyrics;
 import org.jmusixmatch.entity.track.Track;
 
-import java.util.Optional;
+import java.util.Map;
 
 /**
  * The connector with the Musixmatch service.
@@ -27,10 +26,16 @@ public class MusixmatchConnector {
         return this.musixMatch.getMatchingTrack(song, artist);
     }
 
-    public Optional<Lyrics> getLyricsFromTrack(Track track) throws MusixMatchException {
-        if (track.getTrack().getHasLyrics() == 0) {
-            return Optional.empty();
+    public Track getTrackById(int id) throws MusixMatchException {
+        return this.musixMatch.getTrack(id);
+    }
+
+    public Map<String, String> getLyricsFromTrack(Track track) throws MusixMatchException {
+        if (track == null || track.getTrack().getHasLyrics() == 0) {
+            return Map.of("lyrics", "Failed to lookup lyrics", "id", "-1");
         }
-        return Optional.of(this.musixMatch.getLyrics(track.getTrack().getTrackId()));
+        String lyrics = this.musixMatch.getLyrics(track.getTrack().getTrackId()).getLyricsBody();
+        lyrics = lyrics.substring(0, lyrics.indexOf("*****"));
+        return Map.of("lyrics", lyrics, "id", String.valueOf(track.getTrack().getTrackId()));
     }
 }
