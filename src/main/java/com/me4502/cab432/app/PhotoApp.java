@@ -57,8 +57,8 @@ public class PhotoApp {
         this.gson = new GsonBuilder()
                 .create();
 
-        loadConfigurationAndConnectors();
         loadTagMapping();
+        loadConfigurationAndConnectors();
 
         loadWebServer();
     }
@@ -137,6 +137,10 @@ public class PhotoApp {
                 tagMapping.put(parts[0], parts[1]);
             }
         }
+    }
+
+    public Map<String, String> getTagMapping() {
+        return this.tagMapping;
     }
 
     /**

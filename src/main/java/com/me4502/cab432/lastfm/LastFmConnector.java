@@ -1,5 +1,7 @@
 package com.me4502.cab432.lastfm;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.me4502.cab432.app.PhotoApp;
 import de.umass.lastfm.Tag;
@@ -7,6 +9,7 @@ import de.umass.lastfm.Track;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -19,11 +22,26 @@ public class LastFmConnector {
     private String appKey;
     private String appSecret;
 
+    private Cache<String, Track> trackCache = CacheBuilder.newBuilder()
+            .build();
+
     public LastFmConnector(PhotoApp app, String appKey, String appSecret) {
         this.app = app;
 
         this.appKey = appKey;
         this.appSecret = appSecret;
+
+        Thread cacherThread = new Thread(this::populateCaches);
+        cacherThread.setDaemon(true);
+        cacherThread.setName("Last.FM Cache Populator Thread");
+        cacherThread.start();
+    }
+
+    /**
+     * Populate the trackCache using the default tags.
+     */
+    private void populateCaches() {
+        app.getTagMapping().values().stream().distinct().forEach(this::getTracksFromTag);
     }
 
     public List<String> getPopularTags() {
@@ -33,12 +51,26 @@ public class LastFmConnector {
                 .collect(Collectors.toList());
     }
 
+    private synchronized Track getFullTrack(Track track) {
+        if (!track.getTags().isEmpty()) {
+            return track;
+        }
+        return Track.getInfo(track.getArtist(), track.getName(), appKey);
+    }
+
     public List<Track> getTracksFromTag(String tag) {
         return Tag.getTopTracks(tag, appKey)
                 .stream()
-                .map(track -> Track.getInfo(track.getArtist(), track.getMbid(), appKey))
+                .map(track -> {
+                    try {
+                        return trackCache.get(track.getMbid(), () -> getFullTrack(track));
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                    return track;
+                })
                 .filter(track -> !track.getTags().isEmpty())
-                .limit(10)
+                .limit(9999)
                 .collect(Collectors.toList());
     }
 
