@@ -99,7 +99,7 @@ public class PhotoApp {
     }
 
     private void loadWebServer() {
-        port(5078);
+        port(Integer.parseInt(System.getProperty("photo_app.port", "5078")));
         staticFiles.location("/static");
         redirect.get("/", "/index.html");
         // Setup routes

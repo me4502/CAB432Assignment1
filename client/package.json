@@ -7,8 +7,11 @@
   "dependencies": {
     "@babel/core": "^7.0.1",
     "@babel/preset-env": "^7.0.0",
+    "babel-loader": "^8.0.2",
     "browser-sync": "^2.24.7",
     "gulp": "^3.9.1",
-    "gulp-babel": "^8.0.0"
+    "webpack": "^4.19.0",
+    "webpack-stream": "^5.1.1",
+    "whatwg-fetch": "^3.0.0"
   }
 }

@@ -52,6 +52,7 @@ shadowJar {
 }
 
 node {
+    version = '6.11.5'
     download = true
     nodeModulesDir = file("client")
 }
@@ -66,6 +67,9 @@ docker {
     files tasks.shadowJar.outputs, 'photo_app.conf'
 }
 
+yarn.dependsOn(yarnSetup)
+installGulp.dependsOn(yarn)
+tasks.findByName('gulp_compile').dependsOn 'installGulp'
 jar.dependsOn 'gulp_compile'
 shadowJar.dependsOn(jar)
 build.dependsOn(shadowJar)
