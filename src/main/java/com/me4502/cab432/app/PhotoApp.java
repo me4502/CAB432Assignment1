@@ -1,8 +1,8 @@
 package com.me4502.cab432.app;
 
+import static freemarker.template.Configuration.VERSION_2_3_26;
 import static spark.Spark.get;
 import static spark.Spark.port;
-import static spark.Spark.redirect;
 import static spark.Spark.staticFiles;
 
 import com.amazonaws.services.rekognition.model.Label;
@@ -12,11 +12,14 @@ import com.me4502.cab432.aws.AwsConnector;
 import com.me4502.cab432.flickr.FlickrConnector;
 import com.me4502.cab432.lastfm.LastFmConnector;
 import com.me4502.cab432.musixmatch.MusixmatchConnector;
+import freemarker.template.Configuration;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
+import spark.ModelAndView;
 import spark.Response;
+import spark.template.freemarker.FreeMarkerEngine;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,6 +36,8 @@ import java.util.stream.Collectors;
  * The base app class for this application
  */
 public class PhotoApp {
+
+    private static final boolean DEBUG = true;
 
     private static final PhotoApp instance = new PhotoApp();
 
@@ -93,29 +98,38 @@ public class PhotoApp {
         }
     }
 
-    private void badRequest(Response response, String message) {
+    private String badRequest(Response response, String message) {
         response.status(400);
         response.header("Bad Request", message);
+        return gson.toJson(Map.of("error", message));
     }
 
     private void loadWebServer() {
         port(Integer.parseInt(System.getProperty("photo_app.port", "5078")));
-        staticFiles.location("/static");
-        redirect.get("/", "/index.html");
+        if (DEBUG) {
+            staticFiles.externalLocation("src/main/resources/static");
+        } else {
+            staticFiles.location("/static");
+        }
+
         // Setup routes
         get("/image/search/:term", (request, response)
                 -> gson.toJson(getFlickrConnector().getUrlsForSearch(request.params("term"))));
-        get("/image/label/:image", (request, response) -> {
-            var url = getFlickrConnector().getUrlForId(request.params("image"));
-            return gson.toJson(getAwsConnector().getLabelsForImage(url));
-        });
+        get("/image/label/:image", (request, response)
+                -> getFlickrConnector().getUrlForId(request.params("image"))
+                .map(u -> gson.toJson(getAwsConnector().getLabelsForImage(u)))
+                .orElse(badRequest(response, "Invalid Image")));
         get("/image/tag/:image", (request, response) -> {
             var url = getFlickrConnector().getUrlForId(request.params("image"));
-            var labels = getAwsConnector().getLabelsForImage(url).stream()
-                    .sorted(Comparator.comparingDouble(Label::getConfidence).reversed())
-                    .map(Label::getName)
-                    .collect(Collectors.toList());
-            return gson.toJson(getGenreTagsForLabels(labels));
+            if (url.isPresent()) {
+                var labels = getAwsConnector().getLabelsForImage(url.get()).stream()
+                        .sorted(Comparator.comparingDouble(Label::getConfidence).reversed())
+                        .map(Label::getName)
+                        .collect(Collectors.toList());
+                return gson.toJson(getGenreTagsForLabels(labels));
+            } else {
+                return badRequest(response, "Invalid Image");
+            }
         });
         get("/image/overlay/:image/:trackId", (request, response) -> {
             var url = getFlickrConnector().getUrlForId(request.params("image"));
@@ -125,20 +139,20 @@ public class PhotoApp {
                         getMusixmatchConnector().getTrackById(Integer.parseInt(request.params("trackId")))
                 );
                 if (lyricMap.get("id").equals("-1")) {
-                    badRequest(response, "Failed to find lyrics");
-                    return "";
+                    return badRequest(response, "Failed to find lyrics");
                 }
                 lyrics = lyricMap.get("lyrics");
             } catch (Exception e) {
-                badRequest(response, "Invalid Track ID");
-                return "";
+                return badRequest(response, "Invalid Track ID");
             }
             return gson.toJson("Beep Boop: TODO Make the photo");
         });
         get("/track/tag/:tag", (request, response)
                 -> gson.toJson(getLastFmConnector().getTracksFromTag(request.params("tag"))));
         get("/track/get/:tags", (request, response)
-                -> gson.toJson(getLastFmConnector().getSingleSongByTags(Arrays.asList(request.params("tags").split(",")))));
+                -> getLastFmConnector().getSingleSongByTags(Arrays.asList(request.params("tags").split(",")))
+                        .map(track -> gson.toJson(Map.of("artist", track.getArtist(), "track", track.getName())))
+                        .orElse(badRequest(response, "Failed to find a track by tags!")));
         get("/track/lyrics/:name/:artist", (request, response)
                 -> gson.toJson(getMusixmatchConnector().getLyricsFromTrack(
                         getMusixmatchConnector().getTrackForSong(request.params("name"), request.params("artist")))));
@@ -146,6 +160,21 @@ public class PhotoApp {
                 -> gson.toJson(getGenreTagsForLabels(Arrays.asList(request.params("labels").split(",")))));
         get("/tag/popular", (request, response)
                 -> gson.toJson(getLastFmConnector().getPopularTags()));
+
+        // Web Routes
+        get("/", (request, response)
+                -> render(Map.of("title", "Poster Creator"), "index.ftl"));
+        get("/select_tags", (request, response)
+                -> render(Map.of("title", "Select Tags"), "select_tags.ftl"));
+        get("/export", (request, response)
+                -> render(Map.of("title", "Export"), "export.ftl"));
+    }
+
+    private static String render(Map<String, Object> model, String templatePath) {
+        freemarker.template.Configuration config = new Configuration(VERSION_2_3_26);
+        config.setClassForTemplateLoading(PhotoApp.class, "/templates/");
+
+        return new FreeMarkerEngine(config).render(new ModelAndView(model, templatePath));
     }
 
     /**

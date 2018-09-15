@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The connector with the Flickr services
@@ -61,7 +62,11 @@ public class FlickrConnector {
         return urls;
     }
 
-    public URL getUrlForId(String id) throws FlickrException, MalformedURLException {
-        return new URL(flickr.getPhotosInterface().getPhoto(id).getMediumUrl());
+    public Optional<URL> getUrlForId(String id) throws FlickrException {
+        try {
+            return Optional.of(new URL(flickr.getPhotosInterface().getPhoto(id).getMediumUrl()));
+        } catch (MalformedURLException e) {
+            return Optional.empty();
+        }
     }
 }

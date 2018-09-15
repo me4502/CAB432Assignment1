@@ -7,7 +7,7 @@ const webpack     = require('webpack-stream');
 gulp.task('transpile', function() {
     return gulp.src(['src/js/main.js'])
         .pipe(webpack({
-            mode: 'development',
+            mode: 'production',
             devtool : 'source-map',
             output: {
                 filename: 'packed.js',
@@ -30,6 +30,10 @@ gulp.task('transpile', function() {
         }))
         .pipe(gulp.dest("../src/main/resources/static/js"))
         .pipe(browserSync.stream());
+});
+
+gulp.task('watch_compile', ['transpile'], function() {
+    gulp.watch(['src/js/*.js'], ['transpile']);
 });
 
 // Static Server + watching scss/html files

@@ -21,9 +21,12 @@ repositories {
 
 dependencies {
     // Util
-    compile group: 'com.google.guava', name: 'guava', version: '23.5-jre'
+    compile group: 'com.google.guava', name: 'guava', version: '26.0-jre'
     implementation 'com.google.code.gson:gson:2.8.5'
+
+    // Web
     compile "com.sparkjava:spark-core:2.7.2"
+    compile "com.sparkjava:spark-template-freemarker:2.7.1"
 
     // API Services
     compile group: 'com.sachinhandiekar', name: 'jMusixMatch', version: '1.1.4'
