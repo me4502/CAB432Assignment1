@@ -1,0 +1,8 @@
+@font-face {
+    font-family: AngeliqueRose;
+    src: url("/font/angelique-rose.woff") format("woff");
+}
+
+canvas {
+    font-family: AngeliqueRose, cursive;
+}

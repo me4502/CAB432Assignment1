@@ -3,8 +3,9 @@ import 'babel-polyfill'
 
 const API_URL = 'http://localhost:5078';
 
-export function moveToTagPage(imageId) {
+export function moveToTagPage(imageId, url) {
     localStorage.setItem("chosenImage", imageId);
+    localStorage.setItem("chosenImageURL", url);
     window.location.href = "/select_tags";
 }
 
@@ -41,7 +42,7 @@ export function populateImages() {
                           <img src="${url['url']}">
                         </div>
                         <div class="card-action">
-                          <a href="#" onclick="main.moveToTagPage('${url['id']}')">Choose</a>
+                          <a href="#" onclick="main.moveToTagPage('${url['id']}', '${url['url']}')">Choose</a>
                         </div>
                       </div>
                     </div>`;
@@ -56,7 +57,7 @@ export function populateImages() {
 }
 
 export function loadTags() {
-    if (checkForStorage('chosenImage')) {
+    if (checkForStorage('chosenImage') && checkForStorage('chosenImageURL')) {
         const children = document.querySelector("#tag-container");
 
         let image = localStorage.getItem('chosenImage');
@@ -101,11 +102,10 @@ export function loadTags() {
 }
 
 export function loadExport() {
-    if (checkForStorage('chosenImage') && checkForStorage('chosenTags')) {
-        const children = document.querySelector("#tag-container");
+    if (checkForStorage('chosenImageURL') && checkForStorage('chosenTags')) {
         const songTag = document.querySelector("#song-name");
 
-        let image = localStorage.getItem('chosenImage');
+        let imageUrl = localStorage.getItem('chosenImageURL');
         let tags = localStorage.getItem('chosenTags');
 
         window.fetch(API_URL + '/track/get/' + tags)
@@ -115,10 +115,58 @@ export function loadExport() {
                 window.fetch(API_URL + '/track/lyrics/' + json['track'] + '/' + json['artist'])
                     .then(r => r.json())
                     .then(json => {
-                        console.log(json);
+                        let canvas = document.querySelector("#export-canvas");
+                        let context = canvas.getContext("2d");
+                        let imageObj = new Image();
+                        imageObj.onload = () => {
+                            canvas.width = imageObj.width;
+                            canvas.height = imageObj.height;
+
+                            context.drawImage(imageObj, 0, 0);
+                            context.font = "32pt AngeliqueRose, Cursive";
+                            context.textAlign = "center";
+                            context.strokeStyle = 'black';
+                            context.fillStyle = 'white';
+                            context.lineWidth = 4;
+
+                            let lyricsArray = json['lyrics'].split('\n').slice(0, 4);
+
+                            let fontHeight = 48;
+                            let fontSize = fontHeight * (lyricsArray.length - 1);
+
+                            let x = canvas.width / 2;
+                            let fontOffset = (canvas.height / 2) - (fontSize / 2);
+
+                            for (let line in lyricsArray) {
+                                let y = fontOffset + fontHeight * line;
+                                let text = lyricsArray[line];
+
+                                context.strokeText(text, x, y);
+                                context.fillText(text, x, y);
+                            }
+
+                            // Show the download button
+                            let downloadButton = document.querySelector("#download");
+                            downloadButton.style.display = "block";
+                        };
+                        imageObj.onerror = err => {
+                              songTag.innerHTML += "   Failed to load image!";
+                              console.log(err);
+                        };
+                        imageObj.src = imageUrl;
+                        imageObj.crossOrigin = "Anonymous";
                     });
             })
     }
+}
+
+export function downloadCanvas() {
+    let canvas = document.querySelector("#export-canvas");
+    let downloadButton = document.querySelector("#download");
+
+    let image = canvas.toDataURL("image/png")
+        .replace("image/png", "image/octet-stream");
+    downloadButton.setAttribute("href", image);
 }
 
 export function submitSearchBar(e) {
