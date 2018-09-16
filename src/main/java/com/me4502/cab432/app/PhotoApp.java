@@ -6,6 +6,8 @@ import static spark.Spark.port;
 import static spark.Spark.staticFiles;
 
 import com.amazonaws.services.rekognition.model.Label;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.me4502.cab432.aws.AwsConnector;
@@ -39,6 +41,7 @@ public class PhotoApp {
 
     private static final boolean DEBUG = true;
 
+    // This is a Singleton class - setup as soon as it's first referenced.
     private static final PhotoApp instance = new PhotoApp();
 
     // Connectors
@@ -48,9 +51,10 @@ public class PhotoApp {
     private AwsConnector awsConnector;
 
     // Gson
-    private Gson gson;
+    private Gson gson = new GsonBuilder().create();
 
     private Map<String, String> tagMapping = new HashMap<>();
+    private Multimap<String, String> labelMapping = MultimapBuilder.hashKeys().hashSetValues().build();
 
     private PhotoApp() {
     }
@@ -59,15 +63,15 @@ public class PhotoApp {
      * Loads the main app content.
      */
     public void load() throws IOException {
-        this.gson = new GsonBuilder()
-                .create();
-
         loadTagMapping();
         loadConfigurationAndConnectors();
 
         loadWebServer();
     }
 
+    /**
+     * Load the configuration file and setup the API connectors.
+     */
     private void loadConfigurationAndConnectors() {
         ConfigurationLoader<CommentedConfigurationNode> configManager = HoconConfigurationLoader.builder()
                 .setPath(Paths.get("photo_app.conf"))
@@ -93,20 +97,31 @@ public class PhotoApp {
             this.lastFmConnector = new LastFmConnector(this, lastFmApi, lastFmSecret);
             this.awsConnector = new AwsConnector(this);
         } catch (Exception e) {
-            // If an exception occurs here, it's bad.
+            // If an exception occurs here, it's bad - runtime it.
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Helper function to respond with a bad request.
+     *
+     * @param response The response object
+     * @param message The error message
+     * @return The json-ified error message
+     */
     private String badRequest(Response response, String message) {
         response.status(400);
         response.header("Bad Request", message);
         return gson.toJson(Map.of("error", message));
     }
 
+    /**
+     * Setup the webserver configuration and routes.
+     */
     private void loadWebServer() {
         port(Integer.parseInt(System.getProperty("photo_app.port", "5078")));
         if (DEBUG) {
+            // During debug this allows hot-reloading the static changes.
             staticFiles.externalLocation("src/main/resources/static");
         } else {
             staticFiles.location("/static");
@@ -122,10 +137,13 @@ public class PhotoApp {
                         .sorted(Comparator.comparingDouble(Label::getConfidence).reversed())
                         .map(Label::getName)
                         .collect(Collectors.toList());
-                System.out.println(labels.stream()
-                        .map(String::toLowerCase)
-                        .filter(label -> !tagMapping.keySet().contains(label))
-                        .collect(Collectors.joining(", ")));
+                if (DEBUG) {
+                    // Debug code to assist in making tag mapping entries
+                    System.out.println(labels.stream()
+                            .map(String::toLowerCase)
+                            .filter(label -> !tagMapping.keySet().contains(label))
+                            .collect(Collectors.joining(", ")));
+                }
                 return gson.toJson(getGenreTagsForLabels(labels));
             } else {
                 return badRequest(response, "Invalid Image");
@@ -150,6 +168,13 @@ public class PhotoApp {
                 -> render(Map.of("title", "Export"), "export.ftl"));
     }
 
+    /**
+     * Helper method to render Freemarker template files.
+     *
+     * @param model The model
+     * @param templatePath The template path
+     * @return The rendered template
+     */
     private static String render(Map<String, Object> model, String templatePath) {
         freemarker.template.Configuration config = new Configuration(VERSION_2_3_26);
         config.setClassForTemplateLoading(PhotoApp.class, "/templates/");
@@ -170,12 +195,27 @@ public class PhotoApp {
                 line = line.toLowerCase();
                 String[] parts = line.split("=", 2);
                 tagMapping.put(parts[0], parts[1]);
+                labelMapping.put(parts[1], parts[0]);
             }
         }
     }
 
+    /**
+     * The mapping of Label -> Tag
+     *
+     * @return The tag mapping
+     */
     public Map<String, String> getTagMapping() {
         return this.tagMapping;
+    }
+
+    /**
+     * The mapping of Tag -> Labels
+     *
+     * @return The label mapping
+     */
+    public Multimap<String, String> getLabelMapping() {
+        return this.labelMapping;
     }
 
     /**

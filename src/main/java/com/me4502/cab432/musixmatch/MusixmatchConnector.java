@@ -22,14 +22,36 @@ public class MusixmatchConnector {
         this.musixMatch = new MusixMatch(appKey);
     }
 
+    /**
+     * Gets a track from a song and artist.
+     *
+     * @param song The song
+     * @param artist The artist
+     * @return The track
+     * @throws MusixMatchException If the lookup failed
+     */
     public Track getTrackForSong(String song, String artist) throws MusixMatchException {
         return this.musixMatch.getMatchingTrack(song, artist);
     }
 
+    /**
+     * Gets a track by ID
+     *
+     * @param id The ID
+     * @return The track
+     * @throws MusixMatchException If the lookup failed
+     */
     public Track getTrackById(int id) throws MusixMatchException {
         return this.musixMatch.getTrack(id);
     }
 
+    /**
+     * Gets the lyrics for a given track.
+     *
+     * @param track The track
+     * @return The lyrics
+     * @throws MusixMatchException If the API lookup failed
+     */
     public Map<String, String> getLyricsFromTrack(Track track) throws MusixMatchException {
         if (track == null || track.getTrack().getHasLyrics() == 0) {
             return Map.of("lyrics", "Failed to lookup lyrics", "id", "-1");

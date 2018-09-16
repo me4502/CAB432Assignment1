@@ -40,6 +40,7 @@ public class LastFmConnector {
         Caller.getInstance().getLogger().setLevel(Level.WARNING);
 
         if (PRELOAD_CACHE) {
+            // As these operations are expensive, pre-loading the cache is helpful.
             Thread cacherThread = new Thread(this::populateCaches);
             cacherThread.setDaemon(true);
             cacherThread.setName("Last.FM Cache Populator Thread");
@@ -54,6 +55,11 @@ public class LastFmConnector {
         app.getTagMapping().values().stream().distinct().forEach(this::getTracksFromTag);
     }
 
+    /**
+     * Get a list of popular tags
+     *
+     * @return The popular tags
+     */
     public List<String> getPopularTags() {
         return Tag.getTopTags(appKey).stream()
                 .map(Tag::getName)
@@ -61,6 +67,12 @@ public class LastFmConnector {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Grab a full copy of a track from a basic one.
+     *
+     * @param track The basic track
+     * @return The full track
+     */
     private synchronized Track getFullTrack(Track track) {
         if (!track.getTags().isEmpty()) {
             return track;
@@ -68,6 +80,12 @@ public class LastFmConnector {
         return Track.getInfo(track.getArtist(), track.getName(), appKey);
     }
 
+    /**
+     * Get a list of top tracks for a given tag.
+     *
+     * @param tag The tag
+     * @return The top tracks
+     */
     public List<Track> getTracksFromTag(String tag) {
         return Tag.getTopTracks(tag, appKey)
                 .stream()
@@ -83,6 +101,12 @@ public class LastFmConnector {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get a single song that best matches the list of tags
+     *
+     * @param tags The tags
+     * @return The song, if found
+     */
     public Optional<Track> getSingleSongByTags(List<String> tags) {
         if (tags.isEmpty()) {
             return Optional.empty();
@@ -99,6 +123,13 @@ public class LastFmConnector {
         return tracks.stream().max(Comparator.comparingInt(o -> scoreTags(o.getTags(), tags)));
     }
 
+    /**
+     * Helper method to create a "score" of how well the given tags match the wanted tags.
+     *
+     * @param currentTags The tags to test
+     * @param wantedTags The wanted tags
+     * @return The score
+     */
     private int scoreTags(Collection<String> currentTags, List<String> wantedTags) {
         return currentTags.stream()
                 .filter(wantedTags::contains)

@@ -51,6 +51,7 @@ public class FlickrConnector {
     public List<Map<String, String>> getUrlsForSearch(String search) throws FlickrException {
         SearchParameters parameters = new SearchParameters();
         parameters.setText(search);
+        parameters.setSort(SearchParameters.RELEVANCE);
         List<Photo> photoList = flickr.getPhotosInterface().search(parameters, 5, 1);
         var urls = new ArrayList<Map<String, String>>();
         for (Photo photo : photoList) {
@@ -62,6 +63,13 @@ public class FlickrConnector {
         return urls;
     }
 
+    /**
+     * Gets a photo URL for a photo ID.
+     *
+     * @param id The ID
+     * @return The photo URL
+     * @throws FlickrException If the lookup failed.
+     */
     public Optional<URL> getUrlForId(String id) throws FlickrException {
         try {
             return Optional.of(new URL(flickr.getPhotosInterface().getPhoto(id).getMediumUrl()));

@@ -46,6 +46,12 @@ public class AwsConnector {
                 .build();
     }
 
+    /**
+     * Get a list of scene labels for a given image.
+     *
+     * @param url The image URL
+     * @return The labels
+     */
     public List<Label> getLabelsForImage(URL url) {
         var labels = new ArrayList<Label>();
 
