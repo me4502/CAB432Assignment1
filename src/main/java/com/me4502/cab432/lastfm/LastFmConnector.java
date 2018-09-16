@@ -2,12 +2,14 @@ package com.me4502.cab432.lastfm;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Lists;
 import com.me4502.cab432.app.PhotoApp;
 import de.umass.lastfm.Caller;
 import de.umass.lastfm.Tag;
 import de.umass.lastfm.Track;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -85,19 +87,23 @@ public class LastFmConnector {
         if (tags.isEmpty()) {
             return Optional.empty();
         }
-        var tracks = getTracksFromTag(tags.get(0));
+
+        var tracks = new ArrayList<Track>();
+        tags.stream().limit(3).map(this::getTracksFromTag).forEach(tracks::addAll);
         if (tracks.isEmpty()) {
             return Optional.empty();
         } else if (tracks.size() == 1 || tags.size() == 1) {
             return Optional.of(tracks.get(0));
         }
 
-        return tracks.stream().max((o1, o2) -> {
-            List<String> track1Tags = Lists.newArrayList(o1.getTags());
-            List<String> track2Tags = Lists.newArrayList(o2.getTags());
-            track1Tags.retainAll(tags);
-            track2Tags.retainAll(tags);
-            return Integer.compare(track1Tags.size(), track2Tags.size());
-        });
+        return tracks.stream().max(Comparator.comparingInt(o -> scoreTags(o.getTags(), tags)));
+    }
+
+    private int scoreTags(Collection<String> currentTags, List<String> wantedTags) {
+        return currentTags.stream()
+                .filter(wantedTags::contains)
+                .mapToInt(wantedTags::indexOf)
+                .map(i -> wantedTags.size() - i)
+                .sum();
     }
 }
