@@ -265,6 +265,7 @@ public class PhotoApp {
                 .map(lowerTag -> labelMapping.get(lowerTag))
                 .flatMap(Collection::stream)
                 .distinct()
+                .limit(20)
                 .collect(Collectors.toList());
     }
 

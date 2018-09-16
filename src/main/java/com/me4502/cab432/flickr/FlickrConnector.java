@@ -43,7 +43,15 @@ public class FlickrConnector {
         SearchParameters parameters = new SearchParameters();
         if (tagMode) {
             parameters.setTagMode("any");
-            parameters.setTags(text.split(","));
+            var tagsSplit = text.split(",");
+            String[] tags;
+            if (tagsSplit.length > 20) {
+                tags = new String[20];
+                System.arraycopy(tagsSplit, 0, tags, 0, 20);
+            } else {
+                tags = tagsSplit;
+            }
+            parameters.setTags(tags);
         } else {
             parameters.setText(text);
         }

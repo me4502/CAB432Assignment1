@@ -26,6 +26,7 @@
             <a id="download" style="display: none;" download="export.png">
                 <button type="button" class="btn waves-effect waves-light" onClick="main.downloadCanvas()">Download</button>
             </a>
+            <button type="button" class="btn waves-effect waves-light" style="display: none;" id="make-another" onClick="main.makeAnother()">Make Another</button>
         </div>
     </div>
 

@@ -15,11 +15,11 @@ function createImage(imageObj, lyrics) {
     let longestLyric = Math.max(...lyricsArray.map(line => line.length));
 
     context.drawImage(imageObj, 0, 0);
-    context.font = "32pt AngeliqueRose, Cursive";
-    if (longestLyric * 10 > canvas.width) {
-        context.font = "24pt AngeliqueRose, Cursive";
-    } else if (longestLyric * 12 > canvas.width) {
-        context.font = "28pt AngeliqueRose, Cursive";
+    context.font = "30pt AngeliqueRose, Cursive";
+    if (longestLyric * 7 > canvas.width) {
+        context.font = "22pt AngeliqueRose, Cursive";
+    } else if (longestLyric * 10 > canvas.width) {
+        context.font = "26pt AngeliqueRose, Cursive";
     }
     context.textAlign = "center";
     context.strokeStyle = 'black';
@@ -43,6 +43,9 @@ function createImage(imageObj, lyrics) {
     // Show the download button
     let downloadButton = document.querySelector("#download");
     downloadButton.style.display = "";
+
+    let makeAnotherButton = document.querySelector("#make-another");
+    makeAnotherButton.style.display = "";
 }
 
 function songExport() {
@@ -153,4 +156,15 @@ export function downloadCanvas() {
     let image = canvas.toDataURL("image/png")
         .replace("image/png", "image/octet-stream");
     downloadButton.setAttribute("href", image);
+}
+
+export function makeAnother() {
+    if (checkForStorage('exportMode')) {
+        let exportMode = localStorage.getItem('exportMode');
+        if (exportMode === 'song') {
+            window.location.href = "/by_song";
+        } else if (exportMode === 'image') {
+            window.location.href = "/";
+        }
+    }
 }

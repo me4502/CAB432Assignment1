@@ -23,6 +23,7 @@ export function loadLabels() {
                 const chips = document.querySelector(".chips");
                 M.Chips.init(chips, {
                     data: labels,
+                    limit: 20,
                 });
 
                 confirmButton.style.display = "";
