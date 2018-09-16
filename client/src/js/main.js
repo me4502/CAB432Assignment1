@@ -82,14 +82,12 @@ export function loadTags() {
             while (children.hasChildNodes()) {
                 children.removeChild(children.lastChild);
             }
-            children.innerHTML = "<div class=\"chips chips-tags\"></div>";
-            const chips = document.querySelector("#tag-container");
-            const instances = M.Chips.init(chips, {
+            children.innerHTML = "<div class=\"chips\"></div>";
+            const chips = document.querySelector(".chips");
+            M.Chips.init(chips, {
                 data: tags,
                 autocompleteOptions: {
                     data: autoTags,
-                    limit: Infinity,
-                    minLength: 1
                 }
             });
 
