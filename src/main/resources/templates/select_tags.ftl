@@ -5,7 +5,7 @@
     <#include "nav.ftl">
 
     <div class="container">
-        <div class="row">
+        <div class="row center-align">
             <h3>Refine Your Tags</h3>
         </div>
 
@@ -13,8 +13,11 @@
             <p>Loading Tags... Please wait!</p>
         </div>
 
-        <div class="row">
-            <button class="btn waves-effect waves-light" type="button" onclick="main.moveToExportPage()">Confirm Tags
+        <br/>
+        <br/>
+
+        <div class="row center-align">
+            <button id="confirm-button" class="btn waves-effect waves-light" style="display: none;" type="button" onclick="main.moveToExportPage()">Confirm Tags
                 <i class="material-icons right">submit</i>
             </button>
         </div>

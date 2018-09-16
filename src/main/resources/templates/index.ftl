@@ -5,7 +5,7 @@
     <#include "nav.ftl">
 
     <div class="container">
-        <div class="row">
+        <div class="row center-align">
             <h3>Find an Image</h3>
         </div>
 

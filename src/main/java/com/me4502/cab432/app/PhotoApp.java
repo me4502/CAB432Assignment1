@@ -115,10 +115,6 @@ public class PhotoApp {
         // Setup routes
         get("/image/search/:term", (request, response)
                 -> gson.toJson(getFlickrConnector().getUrlsForSearch(request.params("term"))));
-        get("/image/label/:image", (request, response)
-                -> getFlickrConnector().getUrlForId(request.params("image"))
-                .map(u -> gson.toJson(getAwsConnector().getLabelsForImage(u)))
-                .orElse(badRequest(response, "Invalid Image")));
         get("/image/tag/:image", (request, response) -> {
             var url = getFlickrConnector().getUrlForId(request.params("image"));
             if (url.isPresent()) {
@@ -126,29 +122,15 @@ public class PhotoApp {
                         .sorted(Comparator.comparingDouble(Label::getConfidence).reversed())
                         .map(Label::getName)
                         .collect(Collectors.toList());
+                System.out.println(labels.stream()
+                        .map(String::toLowerCase)
+                        .filter(label -> !tagMapping.keySet().contains(label))
+                        .collect(Collectors.joining(", ")));
                 return gson.toJson(getGenreTagsForLabels(labels));
             } else {
                 return badRequest(response, "Invalid Image");
             }
         });
-        get("/image/overlay/:image/:trackId", (request, response) -> {
-            var url = getFlickrConnector().getUrlForId(request.params("image"));
-            String lyrics = null;
-            try {
-                var lyricMap = getMusixmatchConnector().getLyricsFromTrack(
-                        getMusixmatchConnector().getTrackById(Integer.parseInt(request.params("trackId")))
-                );
-                if (lyricMap.get("id").equals("-1")) {
-                    return badRequest(response, "Failed to find lyrics");
-                }
-                lyrics = lyricMap.get("lyrics");
-            } catch (Exception e) {
-                return badRequest(response, "Invalid Track ID");
-            }
-            return gson.toJson("Beep Boop: TODO Make the photo");
-        });
-        get("/track/tag/:tag", (request, response)
-                -> gson.toJson(getLastFmConnector().getTracksFromTag(request.params("tag"))));
         get("/track/get/:tags", (request, response)
                 -> getLastFmConnector().getSingleSongByTags(Arrays.asList(request.params("tags").split(",")))
                         .map(track -> gson.toJson(Map.of("artist", track.getArtist(), "track", track.getName())))
@@ -156,8 +138,6 @@ public class PhotoApp {
         get("/track/lyrics/:name/:artist", (request, response)
                 -> gson.toJson(getMusixmatchConnector().getLyricsFromTrack(
                         getMusixmatchConnector().getTrackForSong(request.params("name"), request.params("artist")))));
-        get("/tag/label/:labels", (request, response)
-                -> gson.toJson(getGenreTagsForLabels(Arrays.asList(request.params("labels").split(",")))));
         get("/tag/popular", (request, response)
                 -> gson.toJson(getLastFmConnector().getPopularTags()));
 

@@ -4,5 +4,8 @@
 }
 
 canvas {
+    /*display: flex;*/
     font-family: AngeliqueRose, cursive;
+    padding: 0;
+    margin: auto;
 }

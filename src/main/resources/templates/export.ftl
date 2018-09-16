@@ -4,25 +4,30 @@
 <body>
     <#include "nav.ftl">
 
-<div class="container">
-    <div class="row">
-        <h3>Finalise The Image</h3>
-    </div>
+    <div class="container">
+        <div class="row center-align">
+            <h3>Export The Image</h3>
+        </div>
 
-    <div class="row">
-        <p id="song-name">Song Name: Loading...</p>
-    </div>
+        <div class="row">
+            <p id="song-name">Song Name: Loading... This may take a minute...</p>
+        </div>
 
-    <canvas id="export-canvas">
-        Your browser does not support Canvas, sorry.
-    </canvas>
+        <div class="row center-align" id="canvas-container">
+            <canvas id="export-canvas">
+                Your browser does not support Canvas, sorry.
+            </canvas>
+        </div>
 
-    <div class="row">
-        <a id="download" style="display: none;" download="export.png">
-            <button type="button" class="btn waves-effect waves-light" onClick="main.downloadCanvas()">Download</button>
-        </a>
+        <br/>
+        <br/>
+
+        <div class="row center-align">
+            <a id="download" style="display: none;" download="export.png">
+                <button type="button" class="btn waves-effect waves-light" onClick="main.downloadCanvas()">Download</button>
+            </a>
+        </div>
     </div>
-</div>
 
     <#include "js.ftl">
     <script>

@@ -59,6 +59,7 @@ export function populateImages() {
 export function loadTags() {
     if (checkForStorage('chosenImage') && checkForStorage('chosenImageURL')) {
         const children = document.querySelector("#tag-container");
+        const confirmButton = document.querySelector("#confirm-button");
 
         let image = localStorage.getItem('chosenImage');
         Promise.all([
@@ -91,6 +92,8 @@ export function loadTags() {
                     minLength: 1
                 }
             });
+
+            confirmButton.style.display = "";
         }).catch(ex => {
             while (children.hasChildNodes()) {
                 children.removeChild(children.lastChild);
@@ -104,6 +107,8 @@ export function loadTags() {
 export function loadExport() {
     if (checkForStorage('chosenImageURL') && checkForStorage('chosenTags')) {
         const songTag = document.querySelector("#song-name");
+
+        const children = document.querySelector("#canvas-container");
 
         let imageUrl = localStorage.getItem('chosenImageURL');
         let tags = localStorage.getItem('chosenTags');
@@ -122,14 +127,22 @@ export function loadExport() {
                             canvas.width = imageObj.width;
                             canvas.height = imageObj.height;
 
+                            let lyricsArray = json['lyrics']
+                                .split('\n')
+                                .filter(line => line.length > 0)
+                                .slice(0, 4);
+
+                            let longestLyric = Math.max(...lyricsArray.map(line => line.length));
+
                             context.drawImage(imageObj, 0, 0);
                             context.font = "32pt AngeliqueRose, Cursive";
+                            if (longestLyric > 48) {
+                                context.font = "28pt AngeliqueRose, Cursive";
+                            }
                             context.textAlign = "center";
                             context.strokeStyle = 'black';
                             context.fillStyle = 'white';
                             context.lineWidth = 4;
-
-                            let lyricsArray = json['lyrics'].split('\n').slice(0, 4);
 
                             let fontHeight = 48;
                             let fontSize = fontHeight * (lyricsArray.length - 1);
@@ -147,7 +160,7 @@ export function loadExport() {
 
                             // Show the download button
                             let downloadButton = document.querySelector("#download");
-                            downloadButton.style.display = "block";
+                            downloadButton.style.display = "";
                         };
                         imageObj.onerror = err => {
                               songTag.innerHTML += "   Failed to load image!";
@@ -155,8 +168,20 @@ export function loadExport() {
                         };
                         imageObj.src = imageUrl;
                         imageObj.crossOrigin = "Anonymous";
+                    }).catch(ex => {
+                        while (children.hasChildNodes()) {
+                            children.removeChild(children.lastChild);
+                        }
+                        children.innerHTML = "<p>Failed to load lyrics: " + ex.message +"</p>";
+                        console.log('Failed to load lyrics', ex)
                     });
-            })
+            }).catch(ex => {
+                while (children.hasChildNodes()) {
+                    children.removeChild(children.lastChild);
+                }
+                children.innerHTML = "<p>Failed to load song: " + ex.message +"</p>";
+                console.log('Failed to load song', ex)
+            });
     }
 }
 
