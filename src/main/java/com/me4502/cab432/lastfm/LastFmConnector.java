@@ -2,12 +2,12 @@ package com.me4502.cab432.lastfm;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Lists;
 import com.me4502.cab432.app.PhotoApp;
 import de.umass.lastfm.Caller;
 import de.umass.lastfm.Tag;
 import de.umass.lastfm.Track;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -81,6 +81,21 @@ public class LastFmConnector {
     }
 
     /**
+     * Gets the tags from a given song
+     *
+     * @param song The song name
+     * @param artist The song artist
+     * @return The tags list
+     */
+    public List<String> getTagsFromSong(String song, String artist) {
+        var track = Track.getInfo(artist, song, appKey);
+        if (track == null) {
+            return Lists.newArrayList();
+        }
+        return Lists.newArrayList(track.getTags());
+    }
+
+    /**
      * Get a list of top tracks for a given tag.
      *
      * @param tag The tag
@@ -112,8 +127,11 @@ public class LastFmConnector {
             return Optional.empty();
         }
 
-        var tracks = new ArrayList<Track>();
-        tags.stream().limit(3).map(this::getTracksFromTag).forEach(tracks::addAll);
+        var tracks = tags.stream()
+                .limit(3)
+                .map(this::getTracksFromTag)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
         if (tracks.isEmpty()) {
             return Optional.empty();
         } else if (tracks.size() == 1 || tags.size() == 1) {

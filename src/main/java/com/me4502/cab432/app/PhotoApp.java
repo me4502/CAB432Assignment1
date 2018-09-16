@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -130,6 +131,10 @@ public class PhotoApp {
         // Setup routes
         get("/image/search/:term", (request, response)
                 -> gson.toJson(getFlickrConnector().getUrlsForSearch(request.params("term"))));
+        get("/image/search_single/:term", (request, response)
+                -> getFlickrConnector().getUrlForSearch(request.params("term"))
+                .map(url -> gson.toJson(Map.of("url", url)))
+                .orElseGet(() -> badRequest(response, "Failed to find image")));
         get("/image/tag/:image", (request, response) -> {
             var url = getFlickrConnector().getUrlForId(request.params("image"));
             if (url.isPresent()) {
@@ -152,20 +157,40 @@ public class PhotoApp {
         get("/track/get/:tags", (request, response)
                 -> getLastFmConnector().getSingleSongByTags(Arrays.asList(request.params("tags").split(",")))
                         .map(track -> gson.toJson(Map.of("artist", track.getArtist(), "track", track.getName())))
-                        .orElse(badRequest(response, "Failed to find a track by tags!")));
+                        .orElseGet(() -> badRequest(response, "Failed to find a track by tags!")));
+        get("/track/search/:term", (request, response)
+                -> gson.toJson(getMusixmatchConnector().getTrackByTerm(request.params("term")).stream()
+                .map(track -> Map.of(
+                        "id", track.getTrack().getTrackId(),
+                        "song", track.getTrack().getTrackName(),
+                        "artist", track.getTrack().getArtistName()))
+                .collect(Collectors.toList())));
         get("/track/lyrics/:name/:artist", (request, response)
-                -> gson.toJson(getMusixmatchConnector().getLyricsFromTrack(
-                        getMusixmatchConnector().getTrackForSong(request.params("name"), request.params("artist")))));
+                -> gson.toJson(getMusixmatchConnector().getTrackForSong(request.params("name"), request.params("artist"))
+                                .map(track -> getMusixmatchConnector().getLyricsFromTrack(track))));
+        get("/track/lyrics/:trackId", (request, response)
+                -> getMusixmatchConnector().getTrackById(Integer.parseInt(request.params("trackId")))
+                .map(track -> gson.toJson(getMusixmatchConnector().getLyricsFromTrack(track)))
+                .orElseGet(() -> badRequest(response, "Failed to find lyrics")));
         get("/tag/popular", (request, response)
                 -> gson.toJson(getLastFmConnector().getPopularTags()));
+        get("/label/get/:song/:artist", (request, response)
+                -> gson.toJson(getLabelsForGenreTags(getLastFmConnector().getTagsFromSong(request.params("song"), request.params("artist")))));
 
         // Web Routes
+        // Standard Flow
         get("/", (request, response)
                 -> render(Map.of("title", "Poster Creator"), "index.ftl"));
         get("/select_tags", (request, response)
                 -> render(Map.of("title", "Select Tags"), "select_tags.ftl"));
         get("/export", (request, response)
                 -> render(Map.of("title", "Export"), "export.ftl"));
+
+        // Song Flow
+        get("/by_song", (request, response)
+                -> render(Map.of("title", "Create by Song"), "find_song.ftl"));
+        get("/select_labels", (request, response)
+                -> render(Map.of("title", "Select Labels"), "select_labels.ftl"));
     }
 
     /**
@@ -229,6 +254,16 @@ public class PhotoApp {
                 .map(String::toLowerCase)
                 .filter(lowerLabel -> tagMapping.containsKey(lowerLabel))
                 .map(lowerLabel -> tagMapping.get(lowerLabel))
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    private List<String> getLabelsForGenreTags(List<String> tags) {
+        return tags.stream()
+                .map(String::toLowerCase)
+                .filter(lowerTag -> labelMapping.containsKey(lowerTag))
+                .map(lowerTag -> labelMapping.get(lowerTag))
+                .flatMap(Collection::stream)
                 .distinct()
                 .collect(Collectors.toList());
     }

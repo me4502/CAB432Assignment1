@@ -39,6 +39,48 @@ public class FlickrConnector {
         }
     }
 
+    private SearchParameters createParameters(String text, boolean tagMode) {
+        SearchParameters parameters = new SearchParameters();
+        if (tagMode) {
+            parameters.setTagMode("any");
+            parameters.setTags(text.split(","));
+        } else {
+            parameters.setText(text);
+        }
+        parameters.setSort(SearchParameters.RELEVANCE);
+        parameters.setSafeSearch(Flickr.SAFETYLEVEL_MODERATE);
+        try {
+            parameters.setMedia("photos");
+        } catch (FlickrException e) {
+            throw new RuntimeException(e);
+        }
+        return parameters;
+    }
+
+    /**
+     * Grabs a single URL for the search term.
+     *
+     * @param search The search term.
+     * @return The single URL, if present
+     * @throws FlickrException If the Flickr API throws an error
+     */
+    public Optional<String> getUrlForSearch(String search) throws FlickrException {
+        return flickr.getPhotosInterface().search(createParameters(search, true), 1, 1).stream()
+                .map(Photo::getMediumUrl)
+                .findFirst()
+                .or(() -> {
+                    try {
+                        return flickr.getPhotosInterface()
+                                .search(createParameters(search.split(",")[0], false), 1, 1).stream()
+                                .map(Photo::getMediumUrl)
+                                .findFirst();
+                    } catch (FlickrException e) {
+                        e.printStackTrace();
+                        return Optional.empty();
+                    }
+                });
+    }
+
     /**
      * Grabs a list of image URLs for the search term.
      *
@@ -49,10 +91,7 @@ public class FlickrConnector {
      * @throws FlickrException If the Flickr API throws an error
      */
     public List<Map<String, String>> getUrlsForSearch(String search) throws FlickrException {
-        SearchParameters parameters = new SearchParameters();
-        parameters.setText(search);
-        parameters.setSort(SearchParameters.RELEVANCE);
-        List<Photo> photoList = flickr.getPhotosInterface().search(parameters, 5, 1);
+        List<Photo> photoList = flickr.getPhotosInterface().search(createParameters(search, false), 5, 1);
         var urls = new ArrayList<Map<String, String>>();
         for (Photo photo : photoList) {
             var data = new HashMap<String, String>();

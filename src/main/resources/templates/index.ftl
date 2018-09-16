@@ -22,6 +22,9 @@
                         </button>
                     </div>
                 </div>
+                <div class="row">
+                    <a href="/by_song">Want to create by song instead?</a>
+                </div>
             </form>
         </div>
 
