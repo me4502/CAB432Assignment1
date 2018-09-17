@@ -90,13 +90,16 @@ public class PhotoApp {
             var lastFmApi = root.getNode("last_fm_api").getString("ENTER_API_KEY");
             var lastFmSecret = root.getNode("last_fm_secret").getString("ENTER_API_SECRET");
 
+            var awsApi = root.getNode("aws_access_key").getString("ENTER_API_KEY");
+            var awsSecret = root.getNode("aws_secret_key").getString("ENTER_API_SECRET");
+
             configManager.save(root);
 
             // Try to use those keys to load the connectors.
             this.flickrConnector = new FlickrConnector(this, flickrSecret, flickrApi);
             this.musixmatchConnector = new MusixmatchConnector(this, musixmatchApi);
             this.lastFmConnector = new LastFmConnector(this, lastFmApi, lastFmSecret);
-            this.awsConnector = new AwsConnector(this);
+            this.awsConnector = new AwsConnector(this, awsApi, awsSecret);
         } catch (Exception e) {
             // If an exception occurs here, it's bad - runtime it.
             throw new RuntimeException(e);

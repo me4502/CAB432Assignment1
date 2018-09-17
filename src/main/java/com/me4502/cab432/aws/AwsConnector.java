@@ -3,6 +3,7 @@ package com.me4502.cab432.aws;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.rekognition.AmazonRekognition;
@@ -29,12 +30,12 @@ public class AwsConnector {
 
     private final AmazonRekognition rekognitionClient;
 
-    public AwsConnector(PhotoApp app) {
+    public AwsConnector(PhotoApp app, String appKey, String secretKey) {
         this.app = app;
 
         AWSCredentials credentials;
         try {
-            credentials = new ProfileCredentialsProvider().getCredentials();
+            credentials = new BasicAWSCredentials(appKey, secretKey);
         } catch (Exception e) {
             throw new AmazonClientException("Cannot find credentials.", e);
         }
