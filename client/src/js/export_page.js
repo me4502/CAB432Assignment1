@@ -119,10 +119,10 @@ function imageExport() {
                 songTag.innerHTML = "Song Name: " + json['track'] + " by " + json['artist'];
                 window.fetch(API_URL + '/track/lyrics/' + json['track'] + '/' + json['artist'])
                     .then(r => r.json())
-                    .then(json => {
+                    .then(lyricsJson => {
                         let imageObj = new Image();
                         imageObj.onload = () => {
-                            createImage(imageObj, json['lyrics']);
+                            createImage(imageObj, lyricsJson.value['lyrics']);
                         };
                         imageObj.onerror = err => {
                             songTag.innerHTML += "   Failed to load image!";
