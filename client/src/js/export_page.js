@@ -7,6 +7,9 @@ function createImage(imageObj, lyrics) {
     canvas.width = imageObj.width;
     canvas.height = imageObj.height;
 
+    if (lyrics === undefined) {
+        lyrics = "No lyrics found";
+    }
     let lyricsArray = lyrics
         .split('\n')
         .filter(line => line.length > 0)

@@ -37,7 +37,9 @@ public class LastFmConnector {
         this.appKey = appKey;
         this.appSecret = appSecret;
 
-        Caller.getInstance().getLogger().setLevel(Level.WARNING);
+        if (!PhotoApp.DEBUG) {
+            Caller.getInstance().getLogger().setLevel(Level.WARNING);
+        }
 
         if (PRELOAD_CACHE) {
             // As these operations are expensive, pre-loading the cache is helpful.
