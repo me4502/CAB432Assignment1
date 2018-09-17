@@ -122,7 +122,7 @@ function imageExport() {
                     .then(lyricsJson => {
                         let imageObj = new Image();
                         imageObj.onload = () => {
-                            createImage(imageObj, lyricsJson.value['lyrics']);
+                            createImage(imageObj, lyricsJson['lyrics']);
                         };
                         imageObj.onerror = err => {
                             songTag.innerHTML += "   Failed to load image!";

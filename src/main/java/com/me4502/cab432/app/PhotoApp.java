@@ -169,8 +169,9 @@ public class PhotoApp {
                         "artist", track.getTrack().getArtistName()))
                 .collect(Collectors.toList())));
         get("/track/lyrics/:name/:artist", (request, response)
-                -> gson.toJson(getMusixmatchConnector().getTrackForSong(request.params("name"), request.params("artist"))
-                                .map(track -> getMusixmatchConnector().getLyricsFromTrack(track))));
+                -> getMusixmatchConnector().getTrackForSong(request.params("name"), request.params("artist"))
+                                .map(track -> gson.toJson(getMusixmatchConnector().getLyricsFromTrack(track)))
+                                .orElseGet(() -> badRequest(response, "Failed to find lyrics")));
         get("/track/lyrics/:trackId", (request, response)
                 -> getMusixmatchConnector().getTrackById(Integer.parseInt(request.params("trackId")))
                 .map(track -> gson.toJson(getMusixmatchConnector().getLyricsFromTrack(track)))
