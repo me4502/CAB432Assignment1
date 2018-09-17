@@ -55,7 +55,11 @@ export function moveToExportPage() {
         tags.push(inst.chipsData[i]['tag']);
     }
 
-    localStorage.setItem("chosenTags", tags);
-    localStorage.setItem("exportMode", "image");
-    window.location.href = "/export";
+    if (tags.length === 0) {
+        M.toast({html: 'You must select at least one tag!'})
+    } else {
+        localStorage.setItem("chosenTags", tags);
+        localStorage.setItem("exportMode", "image");
+        window.location.href = "/export";
+    }
 }
