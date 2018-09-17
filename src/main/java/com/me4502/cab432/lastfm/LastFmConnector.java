@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  */
 public class LastFmConnector {
 
-    private final static boolean PRELOAD_CACHE = false;
+    private final static boolean PRELOAD_CACHE = System.getProperty("preload-caches", "false").equals("true");
 
     private final PhotoApp app;
 

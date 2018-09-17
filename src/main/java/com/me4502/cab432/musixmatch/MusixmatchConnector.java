@@ -43,7 +43,7 @@ public class MusixmatchConnector {
         params.put(Constants.API_KEY, this.appKey);
         params.put(Constants.QUERY, query);
         params.put(Constants.PAGE, 0);
-        params.put(Constants.PAGE_SIZE, 10);
+        params.put(Constants.PAGE_SIZE, 12);
         params.put(Constants.F_HAS_LYRICS, "1");
         params.put("s_track_rating", "desc");
 

@@ -16,6 +16,10 @@ export function loadLabels() {
                     labels.push({'tag': label});
                 }
 
+                if (labels.length === 0) {
+                    labels.push({'tag': 'countryside'})
+                }
+
                 while (children.hasChildNodes()) {
                     children.removeChild(children.lastChild);
                 }
@@ -46,7 +50,11 @@ export function moveToSongExportPage() {
         labels.push(inst.chipsData[i]['tag']);
     }
 
-    localStorage.setItem("chosenLabels", labels);
-    localStorage.setItem("exportMode", "song");
-    window.location.href = "/export";
+    if (labels.length === 0) {
+        M.toast({html: 'You must select at least one label!'})
+    } else {
+        localStorage.setItem("chosenLabels", labels);
+        localStorage.setItem("exportMode", "song");
+        window.location.href = "/export";
+    }
 }

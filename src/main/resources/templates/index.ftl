@@ -28,8 +28,10 @@
             </form>
         </div>
 
-        <div id="image-container" class="row">
+        <div class="row">
+            <div id="image-container" class="col s12 cards-container">
 
+            </div>
         </div>
     </div>
 

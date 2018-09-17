@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  */
 public class PhotoApp {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = System.getProperty("debug", "false").equals("true");
 
     // This is a Singleton class - setup as soon as it's first referenced.
     private static final PhotoApp instance = new PhotoApp();

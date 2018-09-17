@@ -13,4 +13,4 @@ ADD photo_app.conf photo_app.conf
 
 EXPOSE 5078
 
-ENTRYPOINT java -jar app.jar
+ENTRYPOINT java -Dpreload-caches=true -jar app.jar

@@ -15,10 +15,13 @@ export function populateSongs() {
             for (let song in json) {
                 song = json[song];
                 const div = `<div class="col s12 m4">
-                      <div class="card">
-                        <span class="card-title">
-                          ${song['song']} by ${song['artist']}
-                        </span>
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title">
+                              ${song['song']}
+                            </span>
+                            <p>${song['artist']}</p>
+                        </div>
                         <div class="card-action">
                           <a href="#" onclick="main.moveToLabelPage('${song['id']}', '${song['song']}', '${song['artist']}')">Choose</a>
                         </div>

@@ -92,14 +92,14 @@ public class FlickrConnector {
     /**
      * Grabs a list of image URLs for the search term.
      *
-     * This will have a limit of 5 URLs.
+     * This will have a limit of 6 URLs.
      *
      * @param search The search term.
      * @return The list of up to 5 URLs
      * @throws FlickrException If the Flickr API throws an error
      */
     public List<Map<String, String>> getUrlsForSearch(String search) throws FlickrException {
-        List<Photo> photoList = flickr.getPhotosInterface().search(createParameters(search, false), 5, 1);
+        List<Photo> photoList = flickr.getPhotosInterface().search(createParameters(search, false), 6, 1);
         var urls = new ArrayList<Map<String, String>>();
         for (Photo photo : photoList) {
             var data = new HashMap<String, String>();

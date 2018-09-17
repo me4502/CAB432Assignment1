@@ -1,4 +1,4 @@
-import {API_URL, checkForStorage} from "./util";
+import {API_URL, checkForStorage, DEBUG} from "./util";
 
 function createImage(imageObj, lyrics) {
     let canvas = document.querySelector("#export-canvas");
@@ -16,7 +16,12 @@ function createImage(imageObj, lyrics) {
 
     context.drawImage(imageObj, 0, 0);
     context.font = "30pt AngeliqueRose, Cursive";
-    if (longestLyric * 7 > canvas.width) {
+
+    if (DEBUG) {
+        console.log(longestLyric + " vs " + canvas.width);
+    }
+
+    if (longestLyric * 8 > canvas.width) {
         context.font = "22pt AngeliqueRose, Cursive";
     } else if (longestLyric * 10 > canvas.width) {
         context.font = "26pt AngeliqueRose, Cursive";
@@ -56,6 +61,10 @@ function songExport() {
         const children = document.querySelector("#canvas-container");
 
         let labels = localStorage.getItem('chosenLabels');
+        if (labels.length === 0) {
+            // If we've somehow got here with blank labels, just use countryside.
+            labels = 'countryside';
+        }
 
         let trackId = localStorage.getItem('chosenTrack');
         let songName = localStorage.getItem('chosenTrackName');

@@ -14,16 +14,14 @@ export function populateImages() {
         .then(json => {
             for (let url in json) {
                 url = json[url];
-                const div = `<div class="col s12 m4">
-                      <div class="card">
+                const div = `<div class="card">
                         <div class="card-image">
                           <img src="${url['url']}">
                         </div>
                         <div class="card-action">
                           <a href="#" onclick="main.moveToTagPage('${url['id']}', '${url['url']}')">Choose</a>
                         </div>
-                      </div>
-                    </div>`;
+                      </div>`;
                 let child = document.createElement('div');
                 child.innerHTML = div;
                 children.appendChild(child);
