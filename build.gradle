@@ -65,7 +65,7 @@ gulp {
 }
 
 docker {
-    name 'hub.docker.com/me4502/photos-app:' + versionDetails().gitHash
+    name 'me4502/photos-app:' + versionDetails().gitHash
     dockerfile file('Dockerfile')
     files tasks.shadowJar.outputs, 'photo_app.conf'
 }
