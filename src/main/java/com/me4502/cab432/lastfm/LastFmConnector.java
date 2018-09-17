@@ -54,7 +54,11 @@ public class LastFmConnector {
      * Populate the trackCache using the default tags.
      */
     private void populateCaches() {
-        app.getTagMapping().values().stream().distinct().forEach(this::getTracksFromTag);
+        try {
+            app.getTagMapping().values().stream().distinct().limit(3).forEach(this::getTracksFromTag);
+        } catch (Throwable t) {
+            // This could technically fail.
+        }
     }
 
     /**
